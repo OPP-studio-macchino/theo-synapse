@@ -1,0 +1,53 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import {resolve} from 'node:path';
+import {spawnSync} from 'node:child_process';
+
+const root=resolve(import.meta.dirname,'..');
+const read=path=>readFileSync(resolve(root,path),'utf8');
+const direct=[
+ 'src/direct-coordinator.mjs','src/direct-native-factory.mjs',
+ 'src/direct-workspace-registry.mjs','src/direct-owner-approval.mjs',
+ 'scripts/theo-direct-workspaces.mjs','scripts/theo-direct-daemon-entry.mjs',
+ 'scripts/theo-task-entry.mjs'
+];
+
+test('v0.1.3 builder creates only a unique private candidate and requires direct engine sources',()=>{
+ const source=read('scripts/build-native-app-v013.py');
+ assert.match(source,/APP_VERSION = "0\.1\.3"/);
+ assert.match(source,/CORE_VERSION = "0\.0\.5"/);
+ assert.match(source,/CFBundleVersion":"5"/);
+ assert.match(source,/BUILD_PARENT_MISSING/);
+ assert.match(source,/REQUIRED_DIRECT_SOURCE_MISSING/);
+ assert.match(source,/uuid\.uuid4\(\)\.hex/);
+ assert.doesNotMatch(source,/base\.mkdir/);
+ for(const path of direct)assert.match(source,new RegExp(path.replaceAll('.','\\.')));
+ assert.match(source,/ライブ書き込みとdirect modeは、別途の受入完了まで無効/);
+});
+
+test('v0.1.3 transition is exact, signed, read-only, and preserves native state by rename',()=>{
+ const source=read('scripts/upgrade-native-installed-v013.py');
+ assert.match(source,/bundle_meta\(INSTALLED\)\[1\]=="0\.1\.2"/);
+ assert.match(source,/bundle_meta\(candidate\)\[1\]=="0\.1\.3"/);
+ assert.match(source,/OWNER_REVIEW_FINGERPRINT_MISMATCH/);
+ assert.match(source,/codesign","--verify","--deep","--strict"/);
+ assert.match(source,/Authority=Developer ID Application:/);
+ assert.match(source,/stapler","validate"/);
+ assert.match(source,/spctl","--assess","--type","execute"/);
+ assert.match(source,/CORE_DIRECT_SOURCE_MISSING/);
+ assert.match(source,/FORBIDDEN_NATIVE_PROJECT_REGISTERED/);
+ assert.match(source,/NATIVE_TASK_STATE_INVALID/);
+ assert.match(source,/\(backup_core\/"\.local"\)\.rename\(stage_core\/"\.local"\)/);
+ assert.match(source,/PASS_INSTALLED_V013/);
+ assert.doesNotMatch(source,/copytree\(CORE\/"\.local"/);
+});
+
+test('v0.1.3 Python tooling compiles without writing bytecode',()=>{
+ for(const path of ['scripts/build-native-app-v013.py','scripts/upgrade-native-installed-v013.py']){
+  const result=spawnSync('python3',['-c',
+   'import sys; compile(open(sys.argv[1], encoding="utf-8").read(), sys.argv[1], "exec")',path],
+   {cwd:root,encoding:'utf8'});
+  assert.equal(result.status,0,result.stderr);
+ }
+});
