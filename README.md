@@ -1,6 +1,6 @@
 # Theo Synapse
 
-Theo Synapse is a macOS companion for a ChatGPT-to-local-Codex workflow.
+Theo Synapse connects ChatGPT to local Codex on macOS. The ChatGPT plugin is the interface; the macOS app manages its local host.
 
 ## Scope
 
@@ -44,7 +44,7 @@ codex --version
 codex login status
 ~~~
 
-If Codex is not signed in, use \`codex login\` on your own Mac. Never paste a
+If Codex is not signed in, use `codex login` on your own Mac. Never paste a
 login token, API key or Tunnel credential into ChatGPT or this repository.
 
 ### Install the published Mac pre-release (optional)
@@ -52,15 +52,15 @@ login token, API key or Tunnel credential into ChatGPT or this repository.
 Only use this procedure if you intentionally want to evaluate the older
 v0.1.9 pre-release despite its known reboot issue.
 
-1. Download the Apple Silicon ZIP and its \`.sha256\` file from
+1. Download the Apple Silicon ZIP and its `.sha256` file from
    [v0.1.9-rc.1](https://github.com/OPP-studio-macchino/theo-synapse/releases/tag/v0.1.9-rc.1).
-2. In Terminal, run \`shasum -a 256\` on the downloaded ZIP and compare its
+2. In Terminal, run `shasum -a 256` on the downloaded ZIP and compare its
    digest with the checksum in the release. Do not install if they differ.
-3. Extract the ZIP, place \`Theo Synapse.app\` in your own
-   \`~/Applications\` directory, and open it normally. Do **not** bypass
+3. Extract the ZIP, place `Theo Synapse.app` in your own
+   `~/Applications` directory, and open it normally. Do **not** bypass
    Gatekeeper or remove the app's signature.
 4. Use the app's **初期設定** (initial setup) flow, then check its reported
-   \`READONLY(8)\` status. Do not enable DIRECT or register a real project
+   `READONLY(8)` status. Do not enable DIRECT or register a real project
    until you understand the separate Owner approvals.
 
 The Mac helper does not include your Node/Codex login, Tunnel credentials,
@@ -76,7 +76,7 @@ npm run setup:readonly
 npm run verify:batch
 ~~~
 
-\`setup:readonly\` creates a private \`theo-lab\` demo in that source
+`setup:readonly` creates a private `theo-lab` demo in that source
 checkout. It does **not** register a real source directory in the native Mac
 app. The batch checks do not constitute a signed-app or live ChatGPT E2E.
 
@@ -88,25 +88,25 @@ app. The batch checks do not constitute a signed-app or live ChatGPT E2E.
    profiles are shipped here.
 2. In an eligible ChatGPT account, open **Settings → Plugins** and use the
    supported developer-mode/custom-MCP connection flow to connect **your
-   own configured Tunnel endpoint**. Installing \`Theo Synapse.app\` alone
+   own configured Tunnel endpoint**. Installing `Theo Synapse.app` alone
    does not add the plugin to ChatGPT.
 3. In ChatGPT, select the connected Theo Synapse plugin and first request
-   \`standalone_capabilities\` and \`standalone_list_projects\`. Check the
+   `standalone_capabilities` and `standalone_list_projects`. Check the
    returned project IDs and the live mode **without starting a model turn**.
-   \`READONLY(8)\` has eight tools; Owner-enabled \`DIRECT(10)\` adds
-   \`codex_turn_start\` and \`codex_turn_wait\`.
+   `READONLY(8)` has eight tools; Owner-enabled `DIRECT(10)` adds
+   `codex_turn_start` and `codex_turn_wait`.
 4. To use a **real** project with DIRECT, register its folder on the Mac
-   through the Owner-local \`theo-direct-workspaces.mjs\` workflow. Review
+   through the Owner-local `theo-direct-workspaces.mjs` workflow. Review
    the exact folder, fingerprint and expiry, then complete its separate
    native Mac approval. Activate DIRECT from the Mac app and approve that
    action separately. ChatGPT cannot approve or register a Mac folder on
    your behalf.
 5. Start a **new, read-only** Codex task against an approved workspace,
-   using a new task ID. Retrieve its result with \`codex_turn_wait\` and the
+   using a new task ID. Retrieve its result with `codex_turn_wait` and the
    **same returned run ID**. A real Codex turn may use your Codex quota.
 
 The exact local registration syntax is documented by running
-\`node scripts/theo-direct-workspaces.mjs\` **inside an installed native
+`node scripts/theo-direct-workspaces.mjs` **inside an installed native
 Core that contains this script**. Do not run Owner maintenance commands
 against an unrelated checkout or copy someone else's registry.
 
@@ -117,14 +117,14 @@ historical versions; verify the actual installed app and Core before use.
 
 ### Approval and recovery rules
 
-- \`workspace_write\` needs a separate **Mac Owner task approval** and,
+- `workspace_write` needs a separate **Mac Owner task approval** and,
   when Codex asks to change files or execute a command, **one-action approval**.
   There is no persistent or blanket write grant.
 - The task approval defaults to **Deny**. Explicit refusal and 30-second
   inactivity both block execution; they are recorded separately in
   v0.1.13 on the Owner's verified installation.
-- If a run ends in \`UNKNOWN\`, do not retry that task/run ID, relabel it
-  \`COMPLETED\`, delete its history, or bypass a denied permission. Inspect
+- If a run ends in `UNKNOWN`, do not retry that task/run ID, relabel it
+  `COMPLETED`, delete its history, or bypass a denied permission. Inspect
   its persisted status before creating a **new** task.
 - Do not copy a Mac Owner's Tunnel profile, credentials, SQLite history or
   registered project paths to a second computer.
